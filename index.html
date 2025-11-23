@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>BLE LED Control</title>
+</head>
+
+<body>
+  <h2>Arduino Nano 33 BLE LED Control</h2>
+  <button onclick="connect()">Connect</button>
+  <br><br>
+  <input type="range" min="0" max="255" value="128" id="slider" oninput="setBrightness(this.value)">
+  <p>Brightness: <span id="val">128</span></p>
+  <p id="status"></p>
+
+  <script>
+    let brightnessChar;
+    let lastWrite = 0;
+    let debounceTimeout;
+
+    async function connect() {
+      try {
+        const device = await navigator.bluetooth.requestDevice({
+          filters: [{ name: 'Nano33BLE_LED' }],
+          optionalServices: ['26738915-1234-4321-1234-1a2b3c4d5e6f'] // custom service UUID
+        });
+
+        const server = await device.gatt.connect();
+        const service = await server.getPrimaryService('26738915-1234-4321-1234-1a2b3c4d5e6f');
+        brightnessChar = await service.getCharacteristic('4d3c2b1a-4321-1234-4321-280980280980');
+
+        document.getElementById("status").innerText = "Connected to " + device.name;
+      } catch (error) {
+        document.getElementById("status").innerText = "Error: " + error;
+      }
+    }
+
+    function setBrightness(val) {
+      document.getElementById("val").innerText = val;
+
+      if (brightnessChar) {
+        const now = Date.now();
+        const data = new Uint8Array([Number(val)]);
+
+        // Throttle: send updates at most every 100ms while slider is moving
+        if (now - lastWrite > 100) {
+          lastWrite = now;
+          writeValue(data);
+        }
+
+        // Debounce: ensure one final update after slider stops moving
+        clearTimeout(debounceTimeout);
+        debounceTimeout = setTimeout(() => {
+          writeValue(data);
+        }, 150); // final update after 150ms of inactivity
+      }
+    }
+
+    async function writeValue(data) {
+      try {
+        if (!brightnessChar.service.device.gatt.connected) {
+          await brightnessChar.service.device.gatt.connect();
+        }
+        await brightnessChar.writeValue(data);
+      } catch (e) {
+        console.error("Write failed:", e);
+        document.getElementById("status").innerText = "Write failed: " + e;
+      }
+    }
+  </script>
+</body>
+
+</html>
