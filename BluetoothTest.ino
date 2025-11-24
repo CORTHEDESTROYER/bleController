@@ -3,6 +3,7 @@
 const int ledPin = 12;  // PWM-capable pin
 
 // Custom UUIDs
+// 504B4853-2043-444A-5354-208520252026
 BLEService ledService("26738915-1234-4321-1234-1a2b3c4d5e6f");
 BLEUnsignedCharCharacteristic brightnessChar(
   "4d3c2b1a-4321-1234-4321-280980280980",
