@@ -23,10 +23,12 @@
         const device = await navigator.bluetooth.requestDevice({
           filters: [{ name: 'Nano33BLE_LED' }],
           optionalServices: ['26738915-1234-4321-1234-1a2b3c4d5e6f'] // custom service UUID
+          //504B4853-2043-444A-5354-208520252026
         });
 
         const server = await device.gatt.connect();
         const service = await server.getPrimaryService('26738915-1234-4321-1234-1a2b3c4d5e6f');
+        //504B4853-2043-444A-5354-208520252026
         brightnessChar = await service.getCharacteristic('4d3c2b1a-4321-1234-4321-280980280980');
 
         document.getElementById("status").innerText = "Connected to " + device.name;
@@ -69,5 +71,6 @@
     }
   </script>
 </body>
+
 
 </html>
