@@ -2,30 +2,32 @@
 <html>
 
 <head>
-  <title>BLE LED Control</title>
+  <title>developments</title>
   <script src="https://cdn.jsdelivr.net/npm/p5@1.11.11/lib/p5.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.11/addons/p5.sound.min.js"></script>
 </head>
 
 <body>
-  <h2>arduino stuff</h2>
+  <!-- 
+  <h2>what is a pin anyway, if you really think about it</h2>
+
   <button onclick="connect()">Connect</button>
   <br><br>
-  <input type="range" min="0" max="255" value="128" id="slider" oninput="setBrightness(this.value)">
-  <p>Brightness: <span id="val">128</span></p>
-  <p>angle: <span id="stickA">128</span></p>
-  <p>magnitude: <span id="stickM">128</span></p>
+ <input type="range" min="0" max="255" value="128" id="slider" oninput="setBrightness(this.value)">
+  <p>d1/lv according to html: <span id="d1val">128</span></p>
+  <p>d1/rv according to html: <span id="d2val">128</span></p>
   
   <p>left: <span id="lV">0</span></p>
   <p>right: <span id="rV">0</span></p>
+-->
   
   <p id="status"></p>
   
 
   <script>
     let brightnessChar;
-    let lastWrite = 0;
-    let debounceTimeout;
+    let d1Char;
+    let d2Char;
 
     async function connect() {
       try {
@@ -37,59 +39,42 @@
         const server = await device.gatt.connect();
         const service = await server.getPrimaryService('26738915-1234-4321-1234-1a2b3c4d5e6f');
         brightnessChar = await service.getCharacteristic('4d3c2b1a-4321-1234-4321-280980280980');
+        d1Char = await service.getCharacteristic('4d3c2b1a-4321-1234-4321-d1d1d1d1d1d1');
+        d2Char = await service.getCharacteristic('4d3c2b1a-4321-1234-4321-d2d2d2d2d2d2');
 
         document.getElementById("status").innerText = "Connected to " + device.name;
       } catch (error) {
-        document.getElementById("status").innerText = "Error: " + error;
+        document.getElementById("status").innerText = "imagine not connecting:  " + error;
       }
     }
 
-    function setBrightness(val) {
-      document.getElementById("val").innerText = val;
-
-      if (brightnessChar) {
-        const now = Date.now();
+    function setChar(val,Char) {
+      if(Char) {
         const data = new Uint8Array([Number(val)]);
-
-        // Throttle: send updates at most every 100ms while slider is moving
-        if (now - lastWrite > 100) {
-          lastWrite = now;
-          writeValue(data);
-        }
-
-        // Debounce: ensure one final update after slider stops moving
-        clearTimeout(debounceTimeout);
-        debounceTimeout = setTimeout(() => {
-          writeValue(data);
-        }, 150); // final update after 150ms of inactivity
+        writeValue(data,Char);
       }
     }
 
-    async function writeValue(data) {
+    async function writeValue(data,Char) {
       try {
-        if (!brightnessChar.service.device.gatt.connected) {
-          await brightnessChar.service.device.gatt.connect();
+        if (!Char.service.device.gatt.connected) {
+          await Char.service.device.gatt.connect();
         }
-        await brightnessChar.writeValue(data);
+        await Char.writeValue(data);
       } catch (e) {
-        console.error("Write failed:", e);
-        document.getElementById("status").innerText = "Write failed: " + e;
+        console.error("i have news!", e);
+        document.getElementById("status").innerText = "did someone say " + e;
       }
     }
-    
-    
-  </script>
-  <script>
-  function setup(){
-    createCanvas(windowWidth-11,windowHeight/2);
-    angleMode(DEGREES);
-    textAlign(CENTER);
-  }
+
+    function setup(){
+  createCanvas(windowWidth-11,windowHeight/2);
+  angleMode(DEGREES);
+  textAlign(CENTER);
+}
 
 function draw(){
   background(255);
-  
-  //stick, probably unused
   
   noStroke();
   fill(200);
@@ -133,13 +118,33 @@ function draw(){
   rect(20,140,30,-lv*40);
   rect(110,140,30,-rv*40);
   
-  document.getElementById("lV").innerText=max(0,round(map(lv,0,3,0,128),1)+127);
-  document.getElementById("rV").innerText=max(0,round(map(rv,0,3,0,128),1)+127);
   
+  lv=max(0,round(map(lv,0,3,0,128),1)+127)
+  rv=max(0,round(map(rv,0,3,0,128),1)+127)
+  
+  let keyIsPressedSucks=keyIsDown(87) || keyIsDown(65) || keyIsDown(68) || keyIsDown(83);
+  if(frameCount%10>5){
+    if(keyIsPressedSucks){
+      setChar(lv,d1Char);
+    } else {
+      setChar(127,d1Char);
+    }
+  } else {
+    if(keyIsPressedSucks){
+      setChar(rv,d2Char);
+    } else {
+      setChar(127,d2Char);
+    }
+  }
+
   fill(50,5,0150);
   rect(width-90,10,80,50);
   fill(255);
   text("double click\nto connect",width-50,33);
+  
+  if(frameCount%10===0){
+   // setBrightness(round(sin(frameCount*1.2)*127+127),1);
+  }
   
 }
 
@@ -151,7 +156,8 @@ function doubleClicked(){
   if(insiderect(mouseX,mouseY,width-90,10,80,50)){
     connect();
   }
-}</script>
+}
+  </script>
 </body>
 
 </html>
