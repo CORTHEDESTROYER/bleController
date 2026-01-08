@@ -32,7 +32,7 @@
     async function connect() { //this works; don't worry about how
       try {
         const device = await navigator.bluetooth.requestDevice({
-          filters: [{ name: 'Nano33BLE_LED' }],
+          // filters: [{ name: 'Nano33BLE_LED' }], //I wana rename the car plz
           optionalServices: ['26738915-1234-4321-1234-1a2b3c4d5e6f'] // custom service UUID
         });
 
@@ -189,3 +189,4 @@
 </body>
 
 </html>
+
