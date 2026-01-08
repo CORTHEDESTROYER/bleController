@@ -7,8 +7,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.11/addons/p5.sound.min.js"></script>
 </head>
 
-<body style = "overflow: hidden;">
-  <!-- 
+<body>
+  <!-- html more like htmwho cares
   <h2>what is a pin anyway, if you really think about it</h2>
 
   <button onclick="connect()">Connect</button>
@@ -29,7 +29,7 @@
     let d1Char;
     let d2Char;
 
-    async function connect() {
+    async function connect() { //this works; don't worry about how
       try {
         const device = await navigator.bluetooth.requestDevice({
           filters: [{ name: 'Nano33BLE_LED' }],
@@ -48,14 +48,14 @@
       }
     }
 
-    function setChar(val,Char) {
+    function setChar(val,Char) { //generic thing you call for output
       if(Char) {
         const data = new Uint8Array([Number(val)]);
         writeValue(data,Char);
       }
     }
 
-    async function writeValue(data,Char) {
+    async function writeValue(data,Char) { //generic deployment
       try {
         if (!Char.service.device.gatt.connected) {
           await Char.service.device.gatt.connect();
@@ -67,7 +67,7 @@
       }
     }
     
-    //p5
+    // screw dis we simplifying; p5 injected here
     
     let scalar;
 
@@ -84,18 +84,15 @@
       }
       angleMode(DEGREES);
       textAlign(CENTER);
+      noStroke();
     }
 
     function draw(){
       scale(scalar);
       background(255);
-  
-  
-      noStroke();
-      fill(200);
-  
-      let lv=0;
-      let rv=0;
+      
+      let lv=0; //d1
+      let rv=0; //d2
   
   //why did i make it three? yes.
   
@@ -103,27 +100,28 @@
         lv+=3;
         rv+=3;
       }
-  
       if(keyIsDown(65)){ // A
         lv-=1.5;
         rv+=1.5;
       }
-  
       if(keyIsDown(68)){ // D
         lv+=1.5;
         rv-=1.5;
       }
-  
       if(keyIsDown(83)){ // S
         lv-=3;
         rv-=3;
       }
   
-  
       rv=max(-3,min(rv,3));
       lv=max(-3,min(lv,3));
       
-      fill(200);
+      if(keyIsDown(16)){ //slow if shift
+        rv*=0.5;
+        lv*=0.5;
+      }
+      
+      fill(200);  //display speeds
       rect(30,50,150,500);
       fill(190);
       rect(30,300,150,250);
@@ -136,20 +134,24 @@
       lv=max(0,round(map(lv,0,3,0,128),1)+127)
       rv=max(0,round(map(rv,0,3,0,128),1)+127)
   
-      let keyIsPressedSucks=keyIsDown(87) || keyIsDown(65) || keyIsDown(68) || keyIsDown(83);
-      if(frameCount%10>5){
-        if(keyIsPressedSucks){
+      let heldWASD=keyIsDown(87) || keyIsDown(65) || keyIsDown(68) || keyIsDown(83);
+      if(frameCount%10>5){     //this         sucks
+        if(heldWASD){
           setChar(lv,d1Char);
         } else {
           setChar(127,d1Char);
         }
       } else {
-        if(keyIsPressedSucks){
+        if(heldWASD){
           setChar(rv,d2Char);
         } else {
           setChar(127,d2Char);
         }
       }
+      //you may have noticed that this is the last thing with lv & rv
+      //they change so much; this keeps the display accurate
+      
+      //bluetooth button
 
       fill(50,50,insiderect(mouseX/scalar,mouseY/scalar,1000-150,20,130,70)?250:150);
       rect(1000-150,20,130,70);
@@ -160,17 +162,17 @@
   
     }
 
-    function insiderect(x,y,rx,ry,rw,rh){
+    function insiderect(x,y,rx,ry,rw,rh){ //for bt button
       return (x>rx && x<rx+rw && y>ry && y<ry+rh);
     }
 
-    function doubleClicked(){
+    function doubleClicked(){ //for, too, bt button
       if(insiderect(mouseX/scalar,mouseY/scalar,1000-150,20,130,70)){
         connect();
       }
     }
     
-    function windowResized(){
+    function windowResized(){ // ~ aesthetics ~
       let w=windowWidth-15;
       let h=windowHeight-15;
       let wr=w/1000;
@@ -187,4 +189,3 @@
 </body>
 
 </html>
-
