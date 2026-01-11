@@ -7,7 +7,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.11/addons/p5.sound.min.js"></script>
 </head>
 
-<body>
+<body style = "overflow: hidden;">
   <!-- html more like htmwho cares
   <h2>what is a pin anyway, if you really think about it</h2>
 
@@ -28,6 +28,9 @@
     let brightnessChar;
     let d1Char;
     let d2Char;
+    let drChar;
+    let a1Char;
+    let bChar;
 
     async function connect() { //this works; don't worry about how
       try {
@@ -42,8 +45,8 @@
         d1Char = await service.getCharacteristic('4d3c2b1a-4321-1234-4321-d1d1d1d1d1d1');
         d2Char = await service.getCharacteristic('4d3c2b1a-4321-1234-4321-d2d2d2d2d2d2');
         drChar = await service.getCharacteristic('4d3c2b1a-4321-1234-4321-d0d0d0d0d0d0');
-        a1Char = await service.getCharacteristic('4d3c2b1a-4321-1234-4321-a1a1a1a1a1a1');
-        bChar = await service.getCharacteristic('4d3c2b1a-4321-1234-4321-babababababa');
+        a1Char = await service.getCharacteristic('4d3c2b1a-4321-1234-4321-a1a1a1a1a1a1'); //yeah it's not just a this is sad
+        bChar = await service.getCharacteristic('4d3c2b1a-4321-1234-4321-babababababa'); //babababababta
 
         document.getElementById("status").innerText = "Connected to " + device.name;
       } catch (error) {
@@ -65,9 +68,12 @@
         }
         await Char.writeValue(data);
       } catch (e) {
-        console.error("i have news!", e);
+       // console.error("i have news!", e); holy hell this is laggy
         document.getElementById("status").innerText = "did someone say " + e;
-      }
+        if(e=="NetworkError: GATT operation already in progress"){
+          print('why this no work');
+        }
+      } //
     }
     
     // screw dis we simplifying; p5 injected here
@@ -87,8 +93,14 @@
       }
       angleMode(DEGREES);
       textAlign(CENTER);
+      textSize(40);
       noStroke();
     }
+    
+    let sliders={
+      dr:{on:false,volt:127,label:'DR',sliding:false},
+      a:{on:false,volt:0,label:'A1/2',sliding:false},
+    };
 
     function draw(){
       scale(scalar);
@@ -137,45 +149,103 @@
       lv=max(0,round(map(lv,0,3,0,128),1)+127)
       rv=max(0,round(map(rv,0,3,0,128),1)+127)
   
-      let heldWASD=keyIsDown(87) || keyIsDown(65) || keyIsDown(68) || keyIsDown(83);
-      if(frameCount%10>5){     //this         sucks
-        if(heldWASD){
-          setChar(lv,d1Char);
-        } else {
-          setChar(127,d1Char);
-        }
+      let heldWASD=keyIsDown(87) || keyIsDown(65) || keyIsDown(68) || keyIsDown(83); //keyIsPressedIsUseless
+      if(heldWASD){
+        setChar(lv,d1Char);
+        setChar(rv,d2Char);
       } else {
-        if(heldWASD){
-          setChar(rv,d2Char);
-        } else {
-          setChar(127,d2Char);
-        }
+        setChar(127,d1Char);
+        setChar(127,d2Char);
       }
       //you may have noticed that this is the last thing with lv & rv
       //they change so much; this keeps the display accurate
       
       //bluetooth button
 
-      fill(50,50,insiderect(mouseX/scalar,mouseY/scalar,1000-150,20,130,70)?250:150);
-      rect(1000-150,20,130,70);
+      fill(50,50,insiderect(mouseX/scalar,mouseY/scalar,1000-150,20,130,60)?250:150);
+      rect(1000-150,20,130,60);
       fill(255);  
       if(frameCount%10===0){
        // setBrightness(round(sin(frameCount*1.2)*127+127),1);
       }
-  
+      
+      //other motors
+      motorSlider(240,100,sliders.dr);
+      motorSlider(240,250,sliders.a);
+      
+      if(sliders.dr.on){
+        setChar(sliders.dr.volt,drChar);
+      } else {
+        setChar(127,drChar);
+      }
+      if(sliders.a.on){
+        setChar(sliders.a.volt,a1Char);
+      } else {
+        setChar(0,a1Char);
+      }
+      
+    }
+    
+    function motorSlider(x,y,slider){
+      if(!mouseIsPressed){ //functions
+        slider.sliding=false;
+      } else {
+        if(slider.sliding){
+          slider.volt=map(mouseX/scalar-(x+150),0,300,0,255,true);
+        }
+      }
+      if(slider.on){
+        fill(150,222,150);
+      } else {
+        fill(222,150,150);
+      } //buttons
+      square(x,y,120);
+      fill(255);
+      text(slider.label,x+60,y+74);
+      fill(200);
+      rect(x+150,y+20,300,80);
+      fill(100);
+      rect(x+150,y+20,map(slider.volt,0,255,0,300),80);
+       //sliders
+      fill(255);
+      push();
+      blendMode(DIFFERENCE);
+      textStyle(BOLD);
+      textSize(20);
+      text(round(slider.volt,0),x+300,y+66.9);
+      pop();  
+      
     }
 
-    function insiderect(x,y,rx,ry,rw,rh){ //for bt button
+    
+    function mousePressed(){ //does a slider
+      if(insiderect(mouseX/scalar,mouseY/scalar,240,100,120,120)){
+        sliders.dr.on=!sliders.dr.on;
+      }
+      if(insiderect(mouseX/scalar,mouseY/scalar,390,120,300,80)){
+        sliders.dr.sliding=true;
+      }
+      
+      if(insiderect(mouseX/scalar,mouseY/scalar,240,250,120,120)){
+        sliders.a.on=!sliders.a.on;
+      }
+      if(insiderect(mouseX/scalar,mouseY/scalar,390,270,300,80)){
+        sliders.a.sliding=true;
+      }
+      
+    }
+
+    function insiderect(x,y,rx,ry,rw,rh){ //for button
       return (x>rx && x<rx+rw && y>ry && y<ry+rh);
     }
 
-    function doubleClicked(){ //for, too, bt button
-      if(insiderect(mouseX/scalar,mouseY/scalar,1000-150,20,130,70)){
+    function doubleClicked(){ //for bt button
+      if(insiderect(mouseX/scalar,mouseY/scalar,1000-150,20,130,60)){
         connect();
       }
     }
     
-    function windowResized(){ // ~ aesthetics ~
+    function windowResized(){ // ~ aesthetics ~ 
       let w=windowWidth-15;
       let h=windowHeight-15;
       let wr=w/1000;
@@ -192,6 +262,7 @@
 </body>
 
 </html>
+
 
 
 
