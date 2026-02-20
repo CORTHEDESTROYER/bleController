@@ -99,7 +99,7 @@
     
     let sliders={
       dr:{on:false,volt:127,label:'DR',sliding:false},
-      a:{on:false,volt:0,label:'A1/2',sliding:false},
+      a:{on:false,volt:80,label:'A1/2',sliding:false},
     };
 
     function draw(){
@@ -111,7 +111,7 @@
   
   //why did i make it three? yes.
   
-      if(keyIsDown(87)){ // W
+      if(keyIsDown(83)){ // W i mean S
         lv+=3;
         rv+=3;
       }
@@ -123,7 +123,7 @@
         lv+=1.5;
         rv-=1.5;
       }
-      if(keyIsDown(83)){ // S
+      if(keyIsDown(87)){ // S i mean W
         lv-=3;
         rv-=3;
       }
@@ -147,6 +147,7 @@
   
   
       lv=max(0,round(map(lv,0,3,0,128),1)+127)
+      lv=map(lv,0,255,255,0); //this, and the remapped keys, are to not have to rewire anything
       rv=max(0,round(map(rv,0,3,0,128),1)+127)
   
       let heldWASD=keyIsDown(87) || keyIsDown(65) || keyIsDown(68) || keyIsDown(83); //keyIsPressedIsUseless
@@ -257,6 +258,13 @@
         resizeCanvas(w,w*3/5);
       }
     }
+    
+    
+    
+    /*doctor 1/2
+    a1 1/2
+    a2 34/
+    */
     
   </script>
 </body>
