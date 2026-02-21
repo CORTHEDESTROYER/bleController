@@ -111,19 +111,19 @@
   
   //why did i make it three? yes.
   
-      if(keyIsDown(83)){ // W i mean S
+      if(keyIsDown(87)){ // W
         lv+=3;
         rv+=3;
       }
-      if(keyIsDown(65)){ // A
+      if(keyIsDown(68)){ // A not
         lv-=1.5;
         rv+=1.5;
       }
-      if(keyIsDown(68)){ // D
+      if(keyIsDown(65)){ // D not
         lv+=1.5;
         rv-=1.5;
       }
-      if(keyIsDown(87)){ // S i mean W
+      if(keyIsDown(83)){ // S
         lv-=3;
         rv-=3;
       }
@@ -131,9 +131,12 @@
       rv=max(-3,min(rv,3));
       lv=max(-3,min(lv,3));
       
-      if(keyIsDown(16)){ //slow if shift
-        rv*=0.5;
-        lv*=0.5;
+      if(!keyIsDown(16)){ //slow i mean fastw if shift
+        rv*=0.6;
+        lv*=0.6;
+      } else {
+        rv*=0.999;
+        lv*=0.999;
       }
       
       fill(200);  //display speeds
@@ -147,7 +150,7 @@
   
   
       lv=max(0,round(map(lv,0,3,0,128),1)+127)
-      lv=map(lv,0,255,255,0); //this, and the remapped keys, are to not have to rewire anything
+     // lv=map(lv,0,255,255,0); //this, and the remapped keys, are to not have to rewire anything
       rv=max(0,round(map(rv,0,3,0,128),1)+127)
   
       let heldWASD=keyIsDown(87) || keyIsDown(65) || keyIsDown(68) || keyIsDown(83); //keyIsPressedIsUseless
@@ -258,13 +261,6 @@
         resizeCanvas(w,w*3/5);
       }
     }
-    
-    
-    
-    /*doctor 1/2
-    a1 1/2
-    a2 34/
-    */
     
   </script>
 </body>
