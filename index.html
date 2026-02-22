@@ -127,11 +127,25 @@
         lv-=3;
         rv-=3;
       }
+      if(keyIsDown(81)){ // Q
+        lv+=3;
+      }
+      if(keyIsDown(69)){ // E
+        rv+=3;
+      }
+      if(keyIsDown(90)){ // Z
+        lv-=3;
+      }
+      if(keyIsDown(67)){ // C
+        rv-=3;
+      }
+
+      
   
       rv=max(-3,min(rv,3));
       lv=max(-3,min(lv,3));
       
-      if(!keyIsDown(16)){ //slow i mean fastw if shift
+      if(!keyIsDown(16)){ //slow i mean fast if shift
         rv*=0.6;
         lv*=0.6;
       } else {
@@ -266,6 +280,7 @@
 </body>
 
 </html>
+
 
 
 
